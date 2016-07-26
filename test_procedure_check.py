@@ -1,19 +1,24 @@
 import os # needed for the os.walk function
 from Tkinter import Tk
 from tkFileDialog import askdirectory
+import re
+import sys
+
+FILECOUNT = 0
+ERRORCOUNT = 0
 
 def find_tp_ln(fileName):
-    """Method to find the line number of the location of 'REQUIREMENTS'
+    """Method to find the line number of the location of 'TEST PROCEDURE'
     in the text documents
     
-    If no 'REQUIREMENTS' is found will return -1, otherwise returns line number
+    If no 'TEST PROCEDURE' is found will return -1, otherwise returns line number
     """
     
     with open(fileName, 'r') as file:
         for num, line in enumerate(file, 1):
             if 'TEST PROCEDURE' in line:
                 return num
-        return -1 # if here no requirements found
+        return -1 # if here no TEST PROCEDURE found
     
     return
 
@@ -24,10 +29,12 @@ def check_tp(fileName, fullFileName):
     not match the name of the file.
     """
     
+    global ERRORCOUNT
+    
     # Create variable of proper tp name
-    #correct_tp = str(fileName)
     index = 0
     correct_tp = ""
+    tp_doc_name = ""
     name = fileName.strip().rstrip()
     for i in name:
         if index == 1:
@@ -38,15 +45,16 @@ def check_tp(fileName, fullFileName):
             correct_tp += i
         index += 1
 
-    correct_tp = correct_tp.strip().rstrip()
-    #correct_tp[1] = 'P'
-    #correct_tp[len(correct_tp) - 2] = 's'
-    #print('correct_tp %s' % correct_tp)
-    
+    correct_tp = str(correct_tp).strip().rstrip()
+    correct_doc_tp = correct_tp[:len(correct_tp) - 3] + 'doc'
+    #print('DOC THING %s' % correct_doc_tp)
     
     line_number = find_tp_ln(fullFileName)
+    #print(fullFileName)
     if line_number == -1:
-        print('ERROR: Could not find TEST PROCEDURE in ', fullFileName)
+        print('\tERROR: Could not find TEST PROCEDURE in %s' % fullFileName)
+        print('\n')
+        ERRORCOUNT += 1
         return
     
     # Read in the file data
@@ -54,17 +62,40 @@ def check_tp(fileName, fullFileName):
         data = fin.read().splitlines(True)
         
     # Find the TP name
-    tp_name = str(data[line_number]).strip().rstrip()
-    #print('tp_name %s' % tp_name)
+    #tp_name = str(data[line_number]).strip().rstrip()
+    m1 = re.search('TP\w+\.tst', str(data[line_number]).strip().rstrip())
+    if m1:
+        tp_name = m1.group(0)
+    else:
+        print('\t%s' % fileName)
+        ERRORCOUNT += 1
+        return
+    
+    # Find the .doc file if there is one
+    m1 = re.search('TP\w+.doc', str(data[line_number + 1]).strip().rstrip())    
+    if m1:
+        tp_doc_name = m1.group(0)
+    else:
+        tp_doc_name = ""
 
     # check if it matches
     if correct_tp != tp_name:
-        print('\t%s' % tp_name)
-        print('\t%s' % correct_tp)
-        print('\n')
+        ERRORCOUNT += 1
+        print('\t%s' % fileName)
+        
+    if tp_doc_name != "":
+        # check if doc matches
+        if correct_doc_tp != tp_doc_name:
+            print('\t%s' % fileName)
+
 
 def main():
     """Script designed to replace the headers of Test Case documents"""
+    
+    global FILECOUNT, ERRORCOUNT
+    
+    # Redirect output to a file
+    sys.stdout = open('./results2.log', "w")
     
     Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
     rootDir = askdirectory() # show an "Open" dialog box and return the path to the selected file
@@ -78,12 +109,18 @@ def main():
         # Ignore hidden files and directories
         fileList = [f for f in fileList if not f[0] == '.']
         subdirList[:] = [d for d in subdirList if not d[0] == '.']
-        
+        print('\n')
         print('Found directory: %s' % dirName)
         for file in fileList:
             if file.endswith('.txt') and file.startswith('TC'):
+                FILECOUNT += 1
                 check_tp(file, os.path.join(dirName, file)) # needs absolute path
 
+    print('\n')
+    print('Total number of TC file checked: %d' % FILECOUNT)
+    print('Total number of TC files with wrong TP names: %d' % ERRORCOUNT)
+    if FILECOUNT != 0:
+        print('Percent Error: %d%%' % (((1.0 * ERRORCOUNT) / FILECOUNT) * 100))    
                 
 if __name__ == '__main__':
     main()
