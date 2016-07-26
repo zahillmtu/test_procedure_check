@@ -1,5 +1,7 @@
-""" The following Python 2.7 script is designed to print the name
-of the files whose TPs do not have an EXACT matching name.
+""" The following Python 2.7 script is designed to log the name
+of any TC file whose TPs do not have an EXACT matching name.
+The results are stored in 'results.log' in the same directory
+as the script.
 
 NOTE:
     Any Test Case file that does not have a 'TEST PROCEDURE' section
