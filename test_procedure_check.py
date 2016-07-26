@@ -1,3 +1,20 @@
+""" The following Python 2.7 script is designed to print the name
+of the files whose TPs do not have an EXACT matching name.
+
+NOTE:
+    Any Test Case file that does not have a 'TEST PROCEDURE' section
+    will be treated as an error by this script. Anytime this is the case
+    an ERROR is printed.
+
+TO RUN:
+    Run the script using python 2.7 and select the root directory from
+    the pop up window. The script will traverse the root directory and
+    all subdirectories beneath it to check the TP file names.
+"""
+
+__author__  = "Zachary Hill"
+__email__   = "zachary.hill@psware.com"
+
 import os # needed for the os.walk function
 from Tkinter import Tk
 from tkFileDialog import askdirectory
@@ -95,7 +112,7 @@ def main():
     global FILECOUNT, ERRORCOUNT
     
     # Redirect output to a file
-    sys.stdout = open('./results2.log', "w")
+    sys.stdout = open('./results.log', "w")
     
     Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
     rootDir = askdirectory() # show an "Open" dialog box and return the path to the selected file
