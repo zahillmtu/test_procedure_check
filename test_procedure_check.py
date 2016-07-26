@@ -137,7 +137,7 @@ def main():
 
     print('\n')
     print('Total number of TC file checked: %d' % FILECOUNT)
-    print('Total number of TC files with wrong TP names: %d' % ERRORCOUNT)
+    print('Total number of TC files with wrong or missing TP names: %d' % ERRORCOUNT)
     if FILECOUNT != 0:
         print('Percent Error: %d%%' % (((1.0 * ERRORCOUNT) / FILECOUNT) * 100))    
                 
