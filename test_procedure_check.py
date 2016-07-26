@@ -72,7 +72,6 @@ def check_tp(fileName, fullFileName):
     #print(fullFileName)
     if line_number == -1:
         print('\tERROR: Could not find TEST PROCEDURE in %s' % fullFileName)
-        print('\n')
         ERRORCOUNT += 1
         return
     
@@ -121,21 +120,21 @@ def main():
     print('Head of tree travesal selected %s' % rootDir)
     
     print('Listing files whose TPs do not match the file name...')
-    print('\n')
+    print('')
     
     # Traverse the tree
     for dirName, subdirList, fileList in os.walk(rootDir):
         # Ignore hidden files and directories
         fileList = [f for f in fileList if not f[0] == '.']
         subdirList[:] = [d for d in subdirList if not d[0] == '.']
-        print('\n')
+        print('')
         print('Found directory: %s' % dirName)
         for file in fileList:
             if file.endswith('.txt') and file.startswith('TC'):
                 FILECOUNT += 1
                 check_tp(file, os.path.join(dirName, file)) # needs absolute path
 
-    print('\n')
+    print('')
     print('Total number of TC file checked: %d' % FILECOUNT)
     print('Total number of TC files with wrong or missing TP names: %d' % ERRORCOUNT)
     if FILECOUNT != 0:
