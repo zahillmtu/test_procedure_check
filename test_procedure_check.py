@@ -29,27 +29,26 @@ ERRORCOUNT = 0
 def find_tp_ln(fileName):
     """Method to find the line number of the location of 'TEST PROCEDURE'
     in the text documents
-    
+
     If no 'TEST PROCEDURE' is found will return -1, otherwise returns line number
     """
-    
+
     with open(fileName, 'r') as file:
         for num, line in enumerate(file, 1):
             if 'TEST PROCEDURE' in line:
                 return num
-        return -1 # if here no TEST PROCEDURE found
-    
-    return
+
+    return -1 # if here no TEST PROCEDURE found
 
 def check_tp(fileName, fullFileName):
     """Method to check the name of the TEST PROCEDURE.
-    
+
     Will print out the name of any file whose TP does
     not match the name of the file.
     """
-    
+
     global ERRORCOUNT
-    
+
     # Create variable of proper tp name
     index = 0
     correct_tp = ""
@@ -67,61 +66,68 @@ def check_tp(fileName, fullFileName):
     correct_tp = str(correct_tp).strip().rstrip()
     correct_doc_tp = correct_tp[:len(correct_tp) - 3] + 'doc'
     #print('DOC THING %s' % correct_doc_tp)
-    
+
     line_number = find_tp_ln(fullFileName)
     #print(fullFileName)
     if line_number == -1:
         print('\tERROR: Could not find TEST PROCEDURE in %s' % fullFileName)
         ERRORCOUNT += 1
         return
-    
+
     # Read in the file data
     with open(fullFileName, 'r') as fin:
         data = fin.read().splitlines(True)
-        
+
+    found_tp = False
+
     # Find the TP name
     #tp_name = str(data[line_number]).strip().rstrip()
     m1 = re.search('TP\w+\.tst', str(data[line_number]).strip().rstrip())
     if m1:
         tp_name = m1.group(0)
+        found_tp = True
     else:
-        print('\t%s' % fileName)
-        ERRORCOUNT += 1
-        return
-    
+        tp_name = ""
+
     # Find the .doc file if there is one
-    m1 = re.search('TP\w+.doc', str(data[line_number + 1]).strip().rstrip())    
+    if found_tp:
+        search_num = line_number + 1
+    else:
+        search_num = line_number
+    m1 = re.search('TP\w+.doc', str(data[search_num]).strip().rstrip())
     if m1:
         tp_doc_name = m1.group(0)
     else:
         tp_doc_name = ""
 
-    # check if it matches
-    if correct_tp != tp_name:
-        ERRORCOUNT += 1
-        print('\t%s' % fileName)
-        
+    # check if tp matches
+    if tp_name != "":
+        if correct_tp != tp_name:
+            ERRORCOUNT += 1
+            print('\t%s' % fileName)
+
+    # check if doc tp mathces
     if tp_doc_name != "":
-        # check if doc matches
         if correct_doc_tp != tp_doc_name:
+            ERRORCOUNT += 1
             print('\t%s' % fileName)
 
 
 def main():
     """Script designed to replace the headers of Test Case documents"""
-    
+
     global FILECOUNT, ERRORCOUNT
-    
+
     # Redirect output to a file
     sys.stdout = open('./results.log', "w")
-    
+
     Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
     rootDir = askdirectory() # show an "Open" dialog box and return the path to the selected file
     print('Head of tree travesal selected %s' % rootDir)
-    
+
     print('Listing files whose TPs do not match the file name...')
     print('')
-    
+
     # Traverse the tree
     for dirName, subdirList, fileList in os.walk(rootDir):
         # Ignore hidden files and directories
@@ -138,7 +144,7 @@ def main():
     print('Total number of TC file checked: %d' % FILECOUNT)
     print('Total number of TC files with wrong or missing TP names: %d' % ERRORCOUNT)
     if FILECOUNT != 0:
-        print('Percent Error: %d%%' % (((1.0 * ERRORCOUNT) / FILECOUNT) * 100))    
-                
+        print('Percent Error: %d%%' % (((1.0 * ERRORCOUNT) / FILECOUNT) * 100))
+
 if __name__ == '__main__':
     main()
